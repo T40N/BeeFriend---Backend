@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { body } from "express-validator";
-import { addBeeGarden } from "../controller/beeGarden";
+import { addBeeGarden, getBeeGarden } from "../controller/beeGarden";
 
 import isAuth from "../middleware/is-auth";
 
@@ -15,6 +15,6 @@ beeGardenRouter.post(
   ],
   addBeeGarden
 );
-beeGardenRouter.get("/beeGarden", isAuth);
+beeGardenRouter.get("/beeGarden", isAuth, getBeeGarden);
 
 export default beeGardenRouter;

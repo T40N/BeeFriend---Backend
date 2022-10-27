@@ -5,6 +5,7 @@ import bodyParser from "body-parser";
 import config from "./config";
 import authRouter from "./routes/auth";
 import beeGardenRouter from "./routes/beeGarden";
+import beeHaveRouter from "./routes/beeHave";
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 app.use("/auth", authRouter);
 app.use(beeGardenRouter);
+app.use(beeHaveRouter);
 
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
   const status = error.status || 500;
