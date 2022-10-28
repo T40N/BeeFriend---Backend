@@ -9,7 +9,7 @@ interface IBeeHave {
     date: Date;
     honeyTaken: number;
     waxTaken: number;
-  };
+  }[];
 }
 
 const beeHaveSchema = new Schema({

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import errorCatch from "../helpers/error-catch";
-import validationResoulteCheck from "../helpers/validation-resoult-check";
+import validationResoultCheck from "../helpers/validation-resoult-check";
+
 import BeeHave from "../models/beeHave";
 import User from "../models/user";
 
@@ -14,7 +15,7 @@ export const addBeeHave = async (
   const notes = req.body.notes || "";
 
   try {
-    validationResoulteCheck(req);
+    validationResoultCheck(req);
 
     const user = await User.findById(userId);
 
@@ -111,7 +112,7 @@ export const updateBeeHave = async (
 ) => {
   const beeHaveId = req.params.beeHaveId;
   try {
-    validationResoulteCheck(req);
+    validationResoultCheck(req);
 
     const name = req.body.name;
     const notes = req.body.notes;
@@ -132,6 +133,66 @@ export const updateBeeHave = async (
     res.status(201).json({
       message: "BeeHave succesfully updated.",
       beeHave,
+    });
+  } catch (err) {
+    errorCatch(err, next);
+  }
+};
+
+export const addData = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = req.userId;
+  const beeHaveId = req.params.beeHaveId;
+
+  try {
+    validationResoultCheck(req);
+
+    const date = new Date(req.body.date);
+    const honeyTaken = req.body.honeyTaken;
+    const waxTaken = req.body.waxTaken;
+
+    const newData = {
+      date,
+      honeyTaken,
+      waxTaken,
+    };
+
+    const beeHave = await BeeHave.findById(beeHaveId);
+
+    if (!beeHave) {
+      const error = new Error(`BeeHave of id: ${beeHave} not found.`);
+      error.status = 401;
+      throw error;
+    }
+
+    beeHave.honeyTakenAll = beeHave.honeyTakenAll + honeyTaken;
+    beeHave.waxTakenAll = beeHave.waxTakenAll + waxTaken;
+    beeHave.history!.push(newData);
+
+    res.status(201).json({
+      message: "Data added.",
+      data: beeHave,
+    });
+  } catch (err) {
+    errorCatch(err, next);
+  }
+};
+
+export const deleteBeeHave = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const beeHaveId = req.params.beeHaveId;
+
+  try {
+    await BeeHave.findByIdAndDelete(beeHaveId);
+
+    res.status(204).json({
+      message: "BeeHave deleted.",
     });
   } catch (err) {
     errorCatch(err, next);
