@@ -1,7 +1,7 @@
 import { Request } from "express";
 import { validationResult } from "express-validator";
 
-const validationResoulteCheck = (req: Request) => {
+const validationResoultCheck = (req: Request) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const error = new Error("Validation failed.");
@@ -11,4 +11,4 @@ const validationResoulteCheck = (req: Request) => {
   }
 };
 
-export default validationResoulteCheck;
+export default validationResoultCheck;

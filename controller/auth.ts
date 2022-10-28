@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/user";
 import validationResoulteCheck from "../helpers/validation-resoult-check";
 import config from "../config";
+import errorCatch from "../helpers/error-catch";
 
 export const signUp = async (
   req: Request,
@@ -51,10 +52,7 @@ export const signUp = async (
 
     res.status(201).json({ message: "User created!", userId: user._id, token });
   } catch (err) {
-    if (err instanceof Error) {
-      if (!err.status) err.status = 500;
-      next(err);
-    }
+    errorCatch(err, next);
   }
 };
 
@@ -97,9 +95,6 @@ export const logIn = async (
     );
     res.status(200).json({ token: token, userId: user._id.toString() });
   } catch (err) {
-    if (err instanceof Error) {
-      if (!err.status) err.status = 500;
-      next(err);
-    }
+    errorCatch(err, next);
   }
 };

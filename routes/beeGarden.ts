@@ -1,6 +1,10 @@
 import { Router } from "express";
 import { body } from "express-validator";
-import { addBeeGarden, getBeeGarden } from "../controller/beeGarden";
+import {
+  addBeeGarden,
+  changeCordinates,
+  getBeeGarden,
+} from "../controller/beeGarden";
 
 import isAuth from "../middleware/is-auth";
 
@@ -16,5 +20,14 @@ beeGardenRouter.post(
   addBeeGarden
 );
 beeGardenRouter.get("/beeGarden", isAuth, getBeeGarden);
+beeGardenRouter.put(
+  "/updateCordinate",
+  isAuth,
+  [
+    body("xCordinate").isNumeric().notEmpty(),
+    body("yCordinate").isNumeric().notEmpty(),
+  ],
+  changeCordinates
+);
 
 export default beeGardenRouter;
