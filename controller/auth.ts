@@ -6,6 +6,7 @@ import User from "../models/user";
 import validationResoulteCheck from "../helpers/validation-resoult-check";
 import config from "../config";
 import errorCatch from "../helpers/error-catch";
+import Magazyn from "../models/magazyn";
 
 export const signUp = async (
   req: Request,
@@ -31,11 +32,19 @@ export const signUp = async (
 
     const hashedPassword = await bcryptjs.hash(password, 12);
 
+    const magazyn = new Magazyn({
+      tools: [],
+      fodder: [],
+    });
+
+    await magazyn.save();
+
     const user = new User({
       email,
       password: hashedPassword,
       name,
       surname,
+      magazyn,
     });
     await user.save();
 

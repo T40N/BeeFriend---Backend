@@ -7,6 +7,7 @@ import authRouter from "./routes/auth";
 import beeGardenRouter from "./routes/beeGarden";
 import beeHaveRouter from "./routes/beeHave";
 import eventRouter from "./routes/event";
+import magazynRouter from "./routes/magazyn";
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use("/auth", authRouter);
 app.use(beeGardenRouter);
 app.use(beeHaveRouter);
 app.use("/event", eventRouter);
+app.use("/magazyn", magazynRouter);
 
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
   const status = error.status || 500;

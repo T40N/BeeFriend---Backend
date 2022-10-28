@@ -4,12 +4,12 @@ interface IMagazyn {
   fodder: {
     name: string;
     opis: string;
-    quantity: string;
+    quantity: number;
   }[];
   tools: {
     name: string;
     opis: string;
-    quantity: string;
+    quantity: number;
   }[];
 }
 
