@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import errorCatch from "../helpers/error-catch";
 import validationResoultCheck from "../helpers/validation-resoult-check";
+import { Types } from "mongoose";
 
 import BeeHave from "../models/beeHave";
 import User from "../models/user";
@@ -187,8 +188,23 @@ export const deleteBeeHave = async (
   next: NextFunction
 ) => {
   const beeHaveId = req.params.beeHaveId;
+  const userId = req.userId;
 
   try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      const error = new Error("User does not exist.");
+      error.status = 401;
+      throw error;
+    }
+
+    const filteredBeeGarden = user.beeGarden!.beeHaves.filter(
+      (beeHave) => beeHave !== new Types.ObjectId(beeHaveId)
+    );
+    user.beeGarden!.beeHaves = filteredBeeGarden;
+
+    await user.save();
     await BeeHave.findByIdAndDelete(beeHaveId);
 
     res.status(204).json({
