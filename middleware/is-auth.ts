@@ -33,7 +33,6 @@ const isAuth = (req: Request, res: Response, next: NextFunction) => {
     error.status = 401;
     throw error;
   }
-  console.log(decodedToken);
 
   req.userId = decodedToken.userId;
   next();
