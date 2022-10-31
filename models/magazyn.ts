@@ -1,51 +1,13 @@
-import { model, Schema } from "mongoose";
+import { model, Schema, Types } from "mongoose";
 
 interface IMagazyn {
-  fodder: {
-    name: string;
-    opis: string;
-    quantity: number;
-  }[];
-  tools: {
-    name: string;
-    opis: string;
-    quantity: number;
-  }[];
+  fodder: Types.ObjectId[];
+  tools: Types.ObjectId[];
 }
 
 const magazynSchema = new Schema({
-  fodder: [
-    {
-      name: {
-        type: String,
-        required: true,
-      },
-      opis: {
-        type: String,
-        required: true,
-      },
-      quantity: {
-        type: Number,
-        required: true,
-      },
-    },
-  ],
-  tools: [
-    {
-      name: {
-        type: String,
-        required: true,
-      },
-      opis: {
-        type: String,
-        required: true,
-      },
-      quantity: {
-        type: Number,
-        required: true,
-      },
-    },
-  ],
+  fodder: [{ type: Types.ObjectId, ref: "Fodder" }],
+  tools: [{ type: Types.ObjectId, ref: "Tools" }],
 });
 
 const Magazyn = model<IMagazyn>("Magazyn", magazynSchema);

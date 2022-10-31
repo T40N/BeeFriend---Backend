@@ -20,9 +20,7 @@ export const addNote = async (
     validationResoultCheck(req);
     const { title, content } = req.body;
 
-    const user = await User.findById(userId);
-
-    const checkedUser = userCheck(user, userId);
+    const checkedUser = await userCheck(userId);
 
     const isOwnerOfBeeHave = checkedUser.beeGarden!.beeHaves.includes(
       new Types.ObjectId(beeHaveId)

@@ -5,7 +5,6 @@ import userCheck from "../helpers/userCheck";
 import validationResoulteCheck from "../helpers/validation-resoult-check";
 
 import Event from "../models/event";
-import User from "../models/user";
 
 export const addEvent = async (
   req: Request,
@@ -28,9 +27,7 @@ export const addEvent = async (
     });
     await event.save();
 
-    const user = await User.findById(userId);
-
-    const checkedUser = userCheck(user, userId);
+    const checkedUser = await userCheck(userId);
 
     checkedUser.calendar.push(event._id);
     await checkedUser.save();
@@ -77,9 +74,7 @@ export const getEvents = async (
   const userId = req.userId;
 
   try {
-    const user = await User.findById(userId).populate("calendar");
-
-    const checkedUser = userCheck(user, userId);
+    const checkedUser = await (await userCheck(userId)).populate("calendar");
     const { calendar } = checkedUser;
 
     res.status(200).json({
@@ -100,9 +95,7 @@ export const deleteEvent = async (
   const eventId = req.params.eventId;
 
   try {
-    const user = await User.findById(userId);
-
-    const checkedUser = userCheck(user, userId);
+    const checkedUser = await userCheck(userId);
 
     const filteredCalendar = checkedUser.calendar.filter(
       (event) => event !== new Types.ObjectId(eventId)
@@ -142,8 +135,7 @@ export const updateEvent = async (
     const date = new Date(req.body.name);
     const opis = req.body.opis;
 
-    const user = await User.findById(userId);
-    const checkedUser = userCheck(user, userId);
+    const checkedUser = await userCheck(userId);
 
     const eventIndex = checkedUser.calendar.indexOf(
       new Types.ObjectId(eventId)

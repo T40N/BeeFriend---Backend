@@ -18,9 +18,7 @@ export const addBeeHave = async (
   try {
     validationResoultCheck(req);
 
-    const user = await User.findById(userId);
-
-    const checkedUser = userCheck(user, userId);
+    const checkedUser = await userCheck(userId);
 
     const beeHave = new BeeHave({
       name,
@@ -76,9 +74,7 @@ export const getBeeHaves = async (
   const userId = req.userId;
 
   try {
-    const user = await User.findById(userId);
-
-    const checkedUser = userCheck(user, userId);
+    const checkedUser = await userCheck(userId);
 
     const beeHaves = checkedUser.beeGarden!.beeHaves;
 
@@ -179,9 +175,7 @@ export const deleteBeeHave = async (
   const userId = req.userId;
 
   try {
-    const user = await User.findById(userId);
-
-    const checkedUser = userCheck(user, userId);
+    const checkedUser = await userCheck(userId);
 
     const filteredBeeGarden = checkedUser.beeGarden!.beeHaves.filter(
       (beeHave) => beeHave !== new Types.ObjectId(beeHaveId)

@@ -1,15 +1,8 @@
-import { Document, Types } from "mongoose";
-import User, { IUser } from "../models/user";
+import User from "../models/user";
 
-type userType =
-  | (Document<unknown, any, IUser> &
-      IUser & {
-        _id: Types.ObjectId;
-      })
-  | null;
-
-const userCheck = (user: userType | null, userId: string) => {
+const userCheck = async (userId: string) => {
   try {
+    const user = await User.findById(userId);
     if (!user) {
       errorThrow(401, `User of id:${userId} does not exists.`);
     }

@@ -1,10 +1,10 @@
-import { Request, Response, NextFunction } from "express";
+import e, { Request, Response, NextFunction } from "express";
 import errorCatch from "../helpers/error-catch";
 import userCheck from "../helpers/userCheck";
 import validationResoultCheck from "../helpers/validation-resoult-check";
+import Fodder from "../models/fodder";
 import Magazyn from "../models/magazyn";
-
-import User from "../models/user";
+import Tools from "../models/tools";
 
 export const getMagazyn = async (
   req: Request,
@@ -14,11 +14,11 @@ export const getMagazyn = async (
   const userId = req.userId;
 
   try {
-    const user = await User.findById(userId).populate("magazyn");
+    const checkedUser = await userCheck(userId);
 
-    const checkedUser = userCheck(user, userId);
-
-    const magazyn = checkedUser.magazyn;
+    const magazyn = await Magazyn.findById(checkedUser.magazyn)
+      .populate("fodder")
+      .populate("tools");
 
     res.status(200).json({
       message: "Magazyn retrived succesfully.",
@@ -29,7 +29,7 @@ export const getMagazyn = async (
   }
 };
 
-export const getFodder = async (
+export const getAllFodder = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -37,11 +37,11 @@ export const getFodder = async (
   const userId = req.userId;
 
   try {
-    const user = await User.findById(userId);
+    const checkedUser = await userCheck(userId);
 
-    const checkedUser = userCheck(user, userId);
-
-    const magazyn = await Magazyn.findById(checkedUser.magazyn);
+    const magazyn = await Magazyn.findById(checkedUser.magazyn).populate(
+      "fodder"
+    );
 
     if (!magazyn) {
       errorThrow(401, "Magazyn does not exists.");
@@ -66,7 +66,7 @@ export const getFodder = async (
   }
 };
 
-export const getTools = async (
+export const getAllTools = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -74,11 +74,11 @@ export const getTools = async (
   const userId = req.userId;
 
   try {
-    const user = await User.findById(userId);
+    const checkedUser = await userCheck(userId);
 
-    const checkedUser = userCheck(user, userId);
-
-    const magazyn = await Magazyn.findById(checkedUser.magazyn);
+    const magazyn = await Magazyn.findById(checkedUser.magazyn).populate(
+      "tools"
+    );
 
     if (!magazyn) {
       const error = new Error("Magazyn does not exists.");
@@ -124,29 +124,25 @@ export const addFodder = async (
     }
     const checkedMagazyn = magazyn!;
 
-    const fodderToAdd = checkedMagazyn.fodder.filter(
-      (food) => food.name === name
-    );
-    if (fodderToAdd.length === 0) {
-      checkedMagazyn.fodder.push({
+    let fodder = await Fodder.findOne({ name });
+    if (fodder) {
+      const isOwnerOfFodder = checkedMagazyn.fodder.includes(fodder._id);
+      if (!isOwnerOfFodder)
+        errorThrow(401, `User of id:${userId} is not owner of fooder: ${name}`);
+
+      fodder.quantity++;
+      fodder.save();
+    } else {
+      fodder = new Fodder({
         name,
         opis,
         quantity: 0,
       });
-      await checkedMagazyn.save();
-    } else {
-      const fodderToAddIndex = checkedMagazyn.fodder.indexOf(fodderToAdd[0]);
-
-      checkedMagazyn.fodder[fodderToAddIndex] = {
-        name,
-        opis,
-        quantity: checkedMagazyn.fodder[fodderToAddIndex].quantity + 1,
-      };
     }
 
     res.status(201).json({
       message: "Fodder added to magazyn.",
-      data: checkedMagazyn.fodder,
+      data: fodder,
     });
   } catch (err) {
     errorCatch(err, next);
@@ -173,31 +169,36 @@ export const addTools = async (
     }
     const checkedMagazyn = magazyn!;
 
-    const toolsToAdd = checkedMagazyn.tools.filter(
-      (tool) => tool.name === name
-    );
-    if (toolsToAdd.length === 0) {
-      checkedMagazyn.tools.push({
+    let tools = await Tools.findOne({ name });
+    if (tools) {
+      const isOwnerOfFodder = checkedMagazyn.fodder.includes(fodder._id);
+      if (!isOwnerOfFodder)
+        errorThrow(401, `User of id:${userId} is not owner of fooder: ${name}`);
+
+      tools.quantity++;
+      tools.save();
+    } else {
+      tools = new Tools({
         name,
         opis,
         quantity: 0,
       });
-      await checkedMagazyn.save();
-    } else {
-      const toolsToAddIndex = checkedMagazyn.tools.indexOf(toolsToAdd[0]);
-
-      checkedMagazyn.tools[toolsToAddIndex] = {
-        name,
-        opis,
-        quantity: checkedMagazyn.tools[toolsToAddIndex].quantity + 1,
-      };
     }
 
     res.status(201).json({
       message: "Tools added to magazyn.",
-      data: checkedMagazyn.fodder,
+      data: tools,
     });
   } catch (err) {
     errorCatch(err, next);
   }
 };
+
+export const deleteFodder = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {};
+
+//TODO refactor need to think about it.
+// const addItem = (name: string, opis: string) => {};

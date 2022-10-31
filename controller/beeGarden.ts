@@ -3,8 +3,6 @@ import errorCatch from "../helpers/error-catch";
 import userCheck from "../helpers/userCheck";
 import validationResoultCheck from "../helpers/validation-resoult-check";
 
-import User from "../models/user";
-
 export const addBeeGarden = async (
   req: Request,
   res: Response,
@@ -18,14 +16,12 @@ export const addBeeGarden = async (
     const xCordinate = req.body.xCordinate;
     const yCordinate = req.body.yCordinate;
 
-    const user = await User.findById(userId);
-
-    const checkedUser = userCheck(user, userId);
+    const checkedUser = await userCheck(userId);
 
     checkedUser.beeGarden!.xCordinate = xCordinate;
     checkedUser.beeGarden!.yCordinate = yCordinate;
 
-    user!.save();
+    checkedUser.save();
 
     res.status(201).json({
       message: "BeeGarden created",
@@ -44,9 +40,7 @@ export const getBeeGarden = async (
   const userId = req.userId;
 
   try {
-    const user = await User.findById(userId);
-
-    const checkedUser = userCheck(user, userId);
+    const checkedUser = await userCheck(userId);
 
     res.status(200).json({
       message: `BeeGarden of user: ${checkedUser._id}`,
@@ -70,9 +64,7 @@ export const changeCordinates = async (
     const xCordinate = req.body.xCordinate;
     const yCordinate = req.body.yCordinate;
 
-    const user = await User.findById(userId);
-
-    const checkedUser = userCheck(user, userId);
+    const checkedUser = await userCheck(userId);
 
     checkedUser.beeGarden!.xCordinate = xCordinate;
     checkedUser.beeGarden!.yCordinate = yCordinate;

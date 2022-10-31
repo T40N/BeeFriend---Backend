@@ -8,6 +8,8 @@ import beeGardenRouter from "./routes/beeGarden";
 import beeHaveRouter from "./routes/beeHave";
 import eventRouter from "./routes/event";
 import magazynRouter from "./routes/magazyn";
+import noteRouter from "./routes/note";
+import userRouter from "./routes/user";
 
 const app = express();
 
@@ -28,6 +30,8 @@ app.use(beeGardenRouter);
 app.use(beeHaveRouter);
 app.use("/event", eventRouter);
 app.use("/magazyn", magazynRouter);
+app.use("/notes", noteRouter);
+app.use("/user", userRouter);
 
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
   const status = error.status || 500;
