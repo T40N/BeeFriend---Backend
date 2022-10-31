@@ -23,11 +23,7 @@ export const signUp = async (
     const confirmPassword = req.body.confirmPassword;
 
     if (password !== confirmPassword) {
-      const error = new Error(
-        "Password and ConfirmPassword should be the same"
-      );
-      error.status = 422;
-      throw error;
+      errorThrow(401, `Password and Confirm password are not the same.`);
     }
 
     const hashedPassword = await bcryptjs.hash(password, 12);
@@ -79,30 +75,27 @@ export const logIn = async (
     const user = await User.findOne({ email });
 
     if (!user) {
-      const error = new Error("A user with this email could not be found");
-      error.status = 401;
-      throw error;
+      errorThrow(401, `User of email:${email} does not exists.`);
     }
+    const checkedUser = user!;
 
-    const isEqual = await bcryptjs.compare(password, user.password);
+    const isPasswordCorrect = await bcryptjs.compare(password, user!.password);
 
-    if (!isEqual) {
-      const error = new Error("Wrong password!");
-      error.status = 401;
-      throw error;
+    if (!isPasswordCorrect) {
+      errorThrow(401, `Password is not correct`);
     }
 
     const token = jwt.sign(
       {
-        email: user.email,
-        userId: user._id.toString(),
+        email: checkedUser.email,
+        userId: checkedUser._id.toString(),
       },
       config.JWT_SECRET,
       {
         expiresIn: "24h",
       }
     );
-    res.status(200).json({ token: token, userId: user._id.toString() });
+    res.status(200).json({ token: token, userId: checkedUser._id.toString() });
   } catch (err) {
     errorCatch(err, next);
   }

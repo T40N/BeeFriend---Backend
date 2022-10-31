@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import errorCatch from "../helpers/error-catch";
+import userCheck from "../helpers/userCheck";
 import validationResoultCheck from "../helpers/validation-resoult-check";
 import Magazyn from "../models/magazyn";
 
@@ -15,13 +16,9 @@ export const getMagazyn = async (
   try {
     const user = await User.findById(userId).populate("magazyn");
 
-    if (!user) {
-      const error = new Error("User does not exist.");
-      error.status = 401;
-      throw error;
-    }
+    const checkedUser = userCheck(user, userId);
 
-    const magazyn = user.magazyn;
+    const magazyn = checkedUser.magazyn;
 
     res.status(200).json({
       message: "Magazyn retrived succesfully.",
@@ -42,21 +39,16 @@ export const getFodder = async (
   try {
     const user = await User.findById(userId);
 
-    if (!user) {
-      const error = new Error("User does not exist.");
-      error.status = 401;
-      throw error;
+    const checkedUser = userCheck(user, userId);
+
+    const magazyn = await Magazyn.findById(checkedUser.magazyn);
+
+    if (!magazyn) {
+      errorThrow(401, "Magazyn does not exists.");
     }
+    const checkedMagazyn = magazyn!;
 
-    const magazyn = await Magazyn.findById(user.magazyn);
-
-    if (!user) {
-      const error = new Error("Magazyn does not exists.");
-      error.status = 401;
-      throw error;
-    }
-
-    const fodder = magazyn!.fodder;
+    const fodder = checkedMagazyn.fodder;
 
     if (fodder.length === 0) {
       res.status(200).json({
@@ -84,13 +76,9 @@ export const getTools = async (
   try {
     const user = await User.findById(userId);
 
-    if (!user) {
-      const error = new Error("User does not exist.");
-      error.status = 401;
-      throw error;
-    }
+    const checkedUser = userCheck(user, userId);
 
-    const magazyn = await Magazyn.findById(user.magazyn);
+    const magazyn = await Magazyn.findById(checkedUser.magazyn);
 
     if (!magazyn) {
       const error = new Error("Magazyn does not exists.");
@@ -132,32 +120,33 @@ export const addFodder = async (
     const magazyn = await Magazyn.findById(userId);
 
     if (!magazyn) {
-      const error = new Error("Magazyn does not exists.");
-      error.status = 401;
-      throw error;
+      errorThrow(401, "Magazyn does not exists");
     }
+    const checkedMagazyn = magazyn!;
 
-    const fodderToAdd = magazyn.fodder.filter((food) => food.name === name);
+    const fodderToAdd = checkedMagazyn.fodder.filter(
+      (food) => food.name === name
+    );
     if (fodderToAdd.length === 0) {
-      magazyn.fodder.push({
+      checkedMagazyn.fodder.push({
         name,
         opis,
         quantity: 0,
       });
-      await magazyn.save();
+      await checkedMagazyn.save();
     } else {
-      const fodderToAddIndex = magazyn.fodder.indexOf(fodderToAdd[0]);
+      const fodderToAddIndex = checkedMagazyn.fodder.indexOf(fodderToAdd[0]);
 
-      magazyn.fodder[fodderToAddIndex] = {
+      checkedMagazyn.fodder[fodderToAddIndex] = {
         name,
         opis,
-        quantity: magazyn.fodder[fodderToAddIndex].quantity + 1,
+        quantity: checkedMagazyn.fodder[fodderToAddIndex].quantity + 1,
       };
     }
 
     res.status(201).json({
       message: "Fodder added to magazyn.",
-      data: magazyn.fodder,
+      data: checkedMagazyn.fodder,
     });
   } catch (err) {
     errorCatch(err, next);
@@ -180,32 +169,33 @@ export const addTools = async (
     const magazyn = await Magazyn.findById(userId);
 
     if (!magazyn) {
-      const error = new Error("Magazyn does not exists.");
-      error.status = 401;
-      throw error;
+      errorThrow(401, "Magazyn does not exists.");
     }
+    const checkedMagazyn = magazyn!;
 
-    const toolsToAdd = magazyn.tools.filter((tool) => tool.name === name);
+    const toolsToAdd = checkedMagazyn.tools.filter(
+      (tool) => tool.name === name
+    );
     if (toolsToAdd.length === 0) {
-      magazyn.tools.push({
+      checkedMagazyn.tools.push({
         name,
         opis,
         quantity: 0,
       });
-      await magazyn.save();
+      await checkedMagazyn.save();
     } else {
-      const toolsToAddIndex = magazyn.tools.indexOf(toolsToAdd[0]);
+      const toolsToAddIndex = checkedMagazyn.tools.indexOf(toolsToAdd[0]);
 
-      magazyn.tools[toolsToAddIndex] = {
+      checkedMagazyn.tools[toolsToAddIndex] = {
         name,
         opis,
-        quantity: magazyn.tools[toolsToAddIndex].quantity + 1,
+        quantity: checkedMagazyn.tools[toolsToAddIndex].quantity + 1,
       };
     }
 
     res.status(201).json({
       message: "Tools added to magazyn.",
-      data: magazyn.fodder,
+      data: checkedMagazyn.fodder,
     });
   } catch (err) {
     errorCatch(err, next);

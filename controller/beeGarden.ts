@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import errorCatch from "../helpers/error-catch";
+import userCheck from "../helpers/userCheck";
 import validationResoultCheck from "../helpers/validation-resoult-check";
 
 import User from "../models/user";
@@ -19,22 +20,16 @@ export const addBeeGarden = async (
 
     const user = await User.findById(userId);
 
-    console.log(user);
+    const checkedUser = userCheck(user, userId);
 
-    if (!user) {
-      const error = new Error("User does not exist.");
-      error.status = 401;
-      throw error;
-    }
-
-    user.beeGarden!.xCordinate = xCordinate;
-    user.beeGarden!.yCordinate = yCordinate;
+    checkedUser.beeGarden!.xCordinate = xCordinate;
+    checkedUser.beeGarden!.yCordinate = yCordinate;
 
     user!.save();
 
     res.status(201).json({
       message: "BeeGarden created",
-      data: user.beeGarden,
+      data: checkedUser.beeGarden,
     });
   } catch (err) {
     errorCatch(err, next);
@@ -51,15 +46,11 @@ export const getBeeGarden = async (
   try {
     const user = await User.findById(userId);
 
-    if (!user) {
-      const error = new Error("User does not exist.");
-      error.status = 401;
-      throw error;
-    }
+    const checkedUser = userCheck(user, userId);
 
     res.status(200).json({
-      message: `BeeGarden of user: ${user._id}`,
-      data: user.beeGarden,
+      message: `BeeGarden of user: ${checkedUser._id}`,
+      data: checkedUser.beeGarden,
     });
   } catch (err) {
     errorCatch(err, next);
@@ -81,19 +72,15 @@ export const changeCordinates = async (
 
     const user = await User.findById(userId);
 
-    if (!user) {
-      const error = new Error("User does not exist.");
-      error.status = 401;
-      throw error;
-    }
+    const checkedUser = userCheck(user, userId);
 
-    user.beeGarden!.xCordinate = xCordinate;
-    user.beeGarden!.yCordinate = yCordinate;
-    user.save();
+    checkedUser.beeGarden!.xCordinate = xCordinate;
+    checkedUser.beeGarden!.yCordinate = yCordinate;
+    checkedUser.save();
 
     res.status(201).json({
       message: "Cordinates succesfully updated",
-      data: user.beeGarden,
+      data: checkedUser.beeGarden,
     });
   } catch (err) {
     errorCatch(err, next);

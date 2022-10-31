@@ -1,10 +1,10 @@
-import { model, Schema } from "mongoose";
+import { model, Schema, Types } from "mongoose";
 
 interface IBeeHave {
   name: string;
   honeyTakenAll: number;
   waxTakenAll: number;
-  notes?: string[];
+  notes?: Types.ObjectId[];
   history?: {
     date: Date;
     honeyTaken: number;
@@ -25,11 +25,7 @@ const beeHaveSchema = new Schema({
     type: Number,
     required: true,
   },
-  notes: [
-    {
-      type: String,
-    },
-  ],
+  notes: [{ type: Types.ObjectId, ref: "Note" }],
   history: [
     {
       date: {

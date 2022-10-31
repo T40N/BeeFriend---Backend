@@ -16,21 +16,15 @@ const beeHaveRouter = Router();
 beeHaveRouter.post(
   "/addBeeHave",
   isAuth,
-  [
-    body("name").isString().notEmpty().trim().isLength({ min: 3 }),
-    body("notes").isString().trim(),
-  ],
+  [body("name").isString().notEmpty().trim().isLength({ min: 3 })],
   addBeeHave
 );
 beeHaveRouter.get("/getBeeHave/:beeHaveId", isAuth, getBeeHave);
 beeHaveRouter.get("/getAllBeeHaves", isAuth, getBeeHaves);
 beeHaveRouter.put(
-  "/updateBeeHave/:beeHaveId",
+  "/updateName/:beeHaveId",
   isAuth,
-  [
-    body("name").isString().notEmpty().trim().isLength({ min: 3 }),
-    body("notes").isString().trim(),
-  ],
+  [body("name").isString().notEmpty().trim().isLength({ min: 3 })],
   updateBeeHave
 );
 beeHaveRouter.post(

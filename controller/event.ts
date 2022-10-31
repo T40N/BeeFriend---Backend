@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { Types } from "mongoose";
 import errorCatch from "../helpers/error-catch";
+import userCheck from "../helpers/userCheck";
 import validationResoulteCheck from "../helpers/validation-resoult-check";
 
 import Event from "../models/event";
@@ -29,19 +30,15 @@ export const addEvent = async (
 
     const user = await User.findById(userId);
 
-    if (!user) {
-      const error = new Error("User does not exist.");
-      error.status = 401;
-      throw error;
-    }
+    const checkedUser = userCheck(user, userId);
 
-    user.calendar.push(event._id);
-    await user.save();
+    checkedUser.calendar.push(event._id);
+    await checkedUser.save();
 
     res.status(200).json({
       message: "Event added to calendar",
       data: event,
-      calendar: user.calendar,
+      calendar: checkedUser.calendar,
     });
   } catch (err) {
     errorCatch(err, next);
@@ -59,14 +56,13 @@ export const getEvent = async (
     const event = await Event.findById(eventId);
 
     if (!event) {
-      const error = new Error(`Event of id:${eventId} not found.`);
-      error.status = 401;
-      throw error;
+      errorThrow(401, `Event of id:${eventId} does not exists.`);
     }
+    const checkedEvent = event!;
 
     res.status(200).json({
       message: "Event retrived succesfully.",
-      data: event,
+      data: checkedEvent,
     });
   } catch (err) {
     errorCatch(err, next);
@@ -83,13 +79,8 @@ export const getEvents = async (
   try {
     const user = await User.findById(userId).populate("calendar");
 
-    if (!user) {
-      const error = new Error(`User not found.`);
-      error.status = 401;
-      throw error;
-    }
-
-    const { calendar } = user;
+    const checkedUser = userCheck(user, userId);
+    const { calendar } = checkedUser;
 
     res.status(200).json({
       messange: "All events from calendar retrived succesfully.",
@@ -111,26 +102,21 @@ export const deleteEvent = async (
   try {
     const user = await User.findById(userId);
 
-    if (!user) {
-      const error = new Error(`User not found.`);
-      error.status = 401;
-      throw error;
-    }
+    const checkedUser = userCheck(user, userId);
 
-    const filteredCalendar = user.calendar.filter(
+    const filteredCalendar = checkedUser.calendar.filter(
       (event) => event !== new Types.ObjectId(eventId)
     );
 
     if (filteredCalendar.length === 0) {
-      const error = new Error(
+      errorThrow(
+        401,
         `Event of id: ${eventId} does not exists, or this event is not owned by user of id:${userId}.`
       );
-      error.status = 401;
-      throw error;
     }
 
-    user.calendar = filteredCalendar;
-    await user.save();
+    checkedUser.calendar = filteredCalendar;
+    await checkedUser.save();
     await Event.findByIdAndDelete(eventId);
 
     res.status(204).json({
@@ -157,19 +143,16 @@ export const updateEvent = async (
     const opis = req.body.opis;
 
     const user = await User.findById(userId);
-    if (!user) {
-      const error = new Error(`User not found.`);
-      error.status = 401;
-      throw error;
-    }
+    const checkedUser = userCheck(user, userId);
 
-    const eventIndex = user.calendar.indexOf(new Types.ObjectId(eventId));
+    const eventIndex = checkedUser.calendar.indexOf(
+      new Types.ObjectId(eventId)
+    );
     if (eventIndex === -1) {
-      const error = new Error(
+      errorThrow(
+        401,
         `Event of id:${eventId} does not exists or user of id:${userId} is not owner of this event`
       );
-      error.status = 401;
-      throw error;
     }
 
     const event = await Event.findByIdAndUpdate(eventId, {
