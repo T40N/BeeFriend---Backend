@@ -12,15 +12,13 @@ declare module "jsonwebtoken" {
 const isAuth = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.get("Authorization");
   if (!authHeader) {
-    const error = new Error("Not authenticated");
-    error.status = 401;
-    throw error;
+    errorThrow(401, "Not authenticated");
   }
+  const checkedAuthHeader = authHeader!;
 
-  const token = authHeader.split(" ")[1];
+  const token = checkedAuthHeader.split(" ")[1];
 
   let decodedToken;
-
   try {
     decodedToken = jwt.verify(token, config.JWT_SECRET) as TokenInterface;
   } catch (err) {
@@ -29,12 +27,11 @@ const isAuth = (req: Request, res: Response, next: NextFunction) => {
   }
 
   if (!decodedToken) {
-    const error = new Error("Not authorized");
-    error.status = 401;
-    throw error;
+    errorThrow(401, "Not authorized");
   }
+  const checkedDecodedToken = decodedToken!;
 
-  req.userId = decodedToken.userId;
+  req.userId = checkedDecodedToken.userId;
   next();
 };
 
