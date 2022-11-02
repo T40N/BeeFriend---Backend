@@ -7,6 +7,9 @@ import {
   getAllTools,
   addTools,
   deleteFodder,
+  deleteFullFodder,
+  deleteTool,
+  deleteFullTools,
 } from "../controller/magazyn";
 
 import isAuth from "../middleware/is-auth";
@@ -32,6 +35,9 @@ magazynRouter.post(
   addTools
 );
 magazynRouter.delete("/deleteFodder/:fodderId", isAuth, deleteFodder);
+magazynRouter.delete("/deleteFullFodder/:fodderId", isAuth, deleteFullFodder);
+magazynRouter.delete("/deleteTool/:toolsId", isAuth, deleteTool);
+magazynRouter.delete("/deleteFullTools/:toolsId", isAuth, deleteFullTools);
 magazynRouter.get("/tools", isAuth, getAllFodder);
 magazynRouter.get("/fodder", isAuth, getAllTools);
 magazynRouter.get("/", isAuth, getMagazyn);

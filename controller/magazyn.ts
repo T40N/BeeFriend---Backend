@@ -348,7 +348,7 @@ export const deleteTool = async (
   }
 };
 
-export const deleteAllTools = async (
+export const deleteFullTools = async (
   req: Request,
   res: Response,
   next: NextFunction
