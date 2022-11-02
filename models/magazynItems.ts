@@ -1,12 +1,12 @@
 import { model, Schema } from "mongoose";
 
-interface ITools {
+export interface IMagazynItems {
   name: string;
   opis: string;
   quantity: number;
 }
 
-const toolsSchema = new Schema({
+const itemsSchema = new Schema({
   name: {
     type: String,
     required: true,
@@ -21,6 +21,5 @@ const toolsSchema = new Schema({
   },
 });
 
-const Tools = model<ITools>("Tools", toolsSchema);
-
-export default Tools;
+export const Tools = model<IMagazynItems>("Tools", itemsSchema);
+export const Fodder = model<IMagazynItems>("Fodder", itemsSchema);

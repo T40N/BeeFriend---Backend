@@ -1,10 +1,19 @@
 import e, { Request, Response, NextFunction } from "express";
+import { Document, Types, Model } from "mongoose";
 import errorCatch from "../helpers/error-catch";
 import userCheck from "../helpers/userCheck";
 import validationResoultCheck from "../helpers/validation-resoult-check";
-import Fodder from "../models/fodder";
-import Magazyn from "../models/magazyn";
-import Tools from "../models/tools";
+import { Tools, Fodder, IMagazynItems } from "../models/magazynItems";
+import Magazyn, { IMagazyn } from "../models/magazyn";
+
+type ItemModel = Model<IMagazynItems, {}, {}, {}, any>;
+
+type MagazynDocument =
+  | (Document<unknown, any, IMagazyn> &
+      IMagazyn & {
+        _id: Types.ObjectId;
+      })
+  | null;
 
 export const getMagazyn = async (
   req: Request,
@@ -117,28 +126,11 @@ export const addFodder = async (
     const name = req.body.name;
     const opis = req.body.opis;
 
-    const magazyn = await Magazyn.findById(userId);
+    const user = await userCheck(userId);
 
-    if (!magazyn) {
-      errorThrow(401, "Magazyn does not exists");
-    }
-    const checkedMagazyn = magazyn!;
+    const magazyn = await findMagazyn(user.magazyn);
 
-    let fodder = await Fodder.findOne({ name });
-    if (fodder) {
-      const isOwnerOfFodder = checkedMagazyn.fodder.includes(fodder._id);
-      if (!isOwnerOfFodder)
-        errorThrow(401, `User of id:${userId} is not owner of fooder: ${name}`);
-
-      fodder.quantity++;
-      fodder.save();
-    } else {
-      fodder = new Fodder({
-        name,
-        opis,
-        quantity: 0,
-      });
-    }
+    const fodder = await addItem(name, opis, Fodder, magazyn, "fodder");
 
     res.status(201).json({
       message: "Fodder added to magazyn.",
@@ -162,28 +154,11 @@ export const addTools = async (
     const name = req.body.name;
     const opis = req.body.opis;
 
-    const magazyn = await Magazyn.findById(userId);
+    const user = await userCheck(userId);
 
-    if (!magazyn) {
-      errorThrow(401, "Magazyn does not exists.");
-    }
-    const checkedMagazyn = magazyn!;
+    const magazyn = await findMagazyn(user.magazyn);
 
-    let tools = await Tools.findOne({ name });
-    if (tools) {
-      const isOwnerOfFodder = checkedMagazyn.fodder.includes(fodder._id);
-      if (!isOwnerOfFodder)
-        errorThrow(401, `User of id:${userId} is not owner of fooder: ${name}`);
-
-      tools.quantity++;
-      tools.save();
-    } else {
-      tools = new Tools({
-        name,
-        opis,
-        quantity: 0,
-      });
-    }
+    const tools = await addItem(name, opis, Fodder, magazyn, "tools");
 
     res.status(201).json({
       message: "Tools added to magazyn.",
@@ -198,7 +173,78 @@ export const deleteFodder = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {};
+) => {
+  const userId = req.userId;
+  const fodderId = req.params.fodderId;
+  try {
+    const user = await userCheck(userId);
+    const magazyn = await findMagazyn(user.magazyn);
+    const fodder = await Fodder.findById(fodderId);
 
-//TODO refactor need to think about it.
-// const addItem = (name: string, opis: string) => {};
+    if (!fodder) {
+      errorThrow(401, `Fodder of id:${fodderId} not found`);
+    }
+    const checkedFodder = fodder!;
+
+    const isOwnerOfFodder = magazyn.fodder.includes(checkedFodder._id);
+
+    if (!isOwnerOfFodder) {
+      errorThrow(
+        401,
+        `User of id:${userId} is not owner of food item of id:${fodderId}`
+      );
+    }
+
+    const fodderFiltered = magazyn.fodder.filter((savedFodderId) => {
+      return savedFodderId.toString() !== fodderId;
+    });
+
+    await checkedFodder.remove();
+    magazyn.fodder = fodderFiltered;
+    await magazyn.save();
+
+    res.status(200).json({
+      message: `Fodder of id:${fodderId} deleted`,
+    });
+  } catch (err) {
+    errorCatch(err, next);
+  }
+};
+
+const addItem = async (
+  name: string,
+  opis: string,
+  ItemModel: ItemModel,
+  magazynDocument: MagazynDocument,
+  magazynItemName: "fodder" | "tools"
+) => {
+  let item = await ItemModel.findOne({ name });
+  if (item) {
+    const isOwnerOfFodder = magazynDocument![magazynItemName].includes(
+      item._id
+    );
+    if (!isOwnerOfFodder) errorThrow(401, `User is not owner of item: ${name}`);
+
+    item.quantity++;
+  } else {
+    item = new ItemModel({
+      name,
+      opis,
+      quantity: 1,
+    });
+    magazynDocument!.fodder.push(item._id);
+  }
+
+  magazynDocument!.save();
+  item.save();
+  return item;
+};
+
+const findMagazyn = async (magazynId: Types.ObjectId) => {
+  const magazyn = await Magazyn.findById(magazynId);
+
+  if (!magazyn) {
+    errorThrow(401, "Magazyn does not exists");
+  }
+  return magazyn!;
+};

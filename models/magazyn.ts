@@ -1,6 +1,6 @@
 import { model, Schema, Types } from "mongoose";
 
-interface IMagazyn {
+export interface IMagazyn {
   fodder: Types.ObjectId[];
   tools: Types.ObjectId[];
 }

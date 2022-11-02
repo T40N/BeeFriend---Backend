@@ -2,10 +2,11 @@ import { Router } from "express";
 import { body } from "express-validator";
 import {
   addFodder,
-  addTools,
-  getFodder,
+  getAllFodder,
   getMagazyn,
-  getTools,
+  getAllTools,
+  addTools,
+  deleteFodder,
 } from "../controller/magazyn";
 
 import isAuth from "../middleware/is-auth";
@@ -30,8 +31,9 @@ magazynRouter.post(
   ],
   addTools
 );
-magazynRouter.get("/tools", isAuth, getTools);
-magazynRouter.get("/fodder", isAuth, getFodder);
+magazynRouter.delete("/deleteFodder/:fodderId", isAuth, deleteFodder);
+magazynRouter.get("/tools", isAuth, getAllFodder);
+magazynRouter.get("/fodder", isAuth, getAllTools);
 magazynRouter.get("/", isAuth, getMagazyn);
 
 export default magazynRouter;
