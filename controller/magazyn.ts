@@ -15,6 +15,44 @@ type MagazynDocument =
       })
   | null;
 
+const addItem = async (
+  name: string,
+  opis: string,
+  ItemModel: ItemModel,
+  magazynDocument: MagazynDocument,
+  magazynItemName: "fodder" | "tools"
+) => {
+  let item = await ItemModel.findOne({ name });
+  if (item) {
+    const isOwnerOfFodder = magazynDocument![magazynItemName].includes(
+      item._id
+    );
+    if (!isOwnerOfFodder) errorThrow(401, `User is not owner of item: ${name}`);
+
+    item.quantity++;
+  } else {
+    item = new ItemModel({
+      name,
+      opis,
+      quantity: 1,
+    });
+    magazynDocument!.fodder.push(item._id);
+  }
+
+  magazynDocument!.save();
+  item.save();
+  return item;
+};
+
+const findMagazyn = async (magazynId: Types.ObjectId) => {
+  const magazyn = await Magazyn.findById(magazynId);
+
+  if (!magazyn) {
+    errorThrow(401, "Magazyn does not exists");
+  }
+  return magazyn!;
+};
+
 export const getMagazyn = async (
   req: Request,
   res: Response,
@@ -195,10 +233,59 @@ export const deleteFodder = async (
       );
     }
 
+    if (checkedFodder.quantity > 1) {
+      checkedFodder.quantity = checkedFodder.quantity - 1;
+      await magazyn.save();
+
+      res.status(200).json({
+        message: `Fodder of id:${fodderId} deleted`,
+      });
+    } else {
+      const fodderFiltered = magazyn.fodder.filter((savedFodderId) => {
+        return savedFodderId.toString() !== fodderId;
+      });
+      await checkedFodder.remove();
+      magazyn.fodder = fodderFiltered;
+      await magazyn.save();
+
+      res.status(200).json({
+        message: `Fodder of id:${fodderId} deleted`,
+      });
+    }
+  } catch (err) {
+    errorCatch(err, next);
+  }
+};
+
+export const deleteFullFodder = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = req.userId;
+  const fodderId = req.params.fodderId;
+  try {
+    const user = await userCheck(userId);
+    const magazyn = await findMagazyn(user.magazyn);
+    const fodder = await Fodder.findById(fodderId);
+
+    if (!fodder) {
+      errorThrow(401, `Fodder of id:${fodderId} not found`);
+    }
+    const checkedFodder = fodder!;
+
+    const isOwnerOfFodder = magazyn.fodder.includes(checkedFodder._id);
+
+    if (!isOwnerOfFodder) {
+      errorThrow(
+        401,
+        `User of id:${userId} is not owner of food item of id:${fodderId}`
+      );
+    }
+
     const fodderFiltered = magazyn.fodder.filter((savedFodderId) => {
       return savedFodderId.toString() !== fodderId;
     });
-
     await checkedFodder.remove();
     magazyn.fodder = fodderFiltered;
     await magazyn.save();
@@ -211,40 +298,93 @@ export const deleteFodder = async (
   }
 };
 
-const addItem = async (
-  name: string,
-  opis: string,
-  ItemModel: ItemModel,
-  magazynDocument: MagazynDocument,
-  magazynItemName: "fodder" | "tools"
+export const deleteTool = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
 ) => {
-  let item = await ItemModel.findOne({ name });
-  if (item) {
-    const isOwnerOfFodder = magazynDocument![magazynItemName].includes(
-      item._id
-    );
-    if (!isOwnerOfFodder) errorThrow(401, `User is not owner of item: ${name}`);
+  const userId = req.userId;
+  const fodderId = req.params.fodderId;
+  try {
+    const user = await userCheck(userId);
+    const magazyn = await findMagazyn(user.magazyn);
+    const tools = await Tools.findById(fodderId);
 
-    item.quantity++;
-  } else {
-    item = new ItemModel({
-      name,
-      opis,
-      quantity: 1,
-    });
-    magazynDocument!.fodder.push(item._id);
+    if (!tools) {
+      errorThrow(401, `Fodder of id:${fodderId} not found`);
+    }
+    const checkedTools = tools!;
+
+    const isOwnerOfFodder = magazyn.fodder.includes(checkedTools._id);
+
+    if (!isOwnerOfFodder) {
+      errorThrow(
+        401,
+        `User of id:${userId} is not owner of food item of id:${fodderId}`
+      );
+    }
+
+    if (checkedTools.quantity > 1) {
+      checkedTools.quantity = checkedTools.quantity - 1;
+      await magazyn.save();
+
+      res.status(200).json({
+        message: `Fodder of id:${fodderId} deleted`,
+      });
+    } else {
+      const fodderFiltered = magazyn.fodder.filter((savedFodderId) => {
+        return savedFodderId.toString() !== fodderId;
+      });
+      await checkedTools.remove();
+      magazyn.fodder = fodderFiltered;
+      await magazyn.save();
+
+      res.status(200).json({
+        message: `Fodder of id:${fodderId} deleted`,
+      });
+    }
+  } catch (err) {
+    errorCatch(err, next);
   }
-
-  magazynDocument!.save();
-  item.save();
-  return item;
 };
 
-const findMagazyn = async (magazynId: Types.ObjectId) => {
-  const magazyn = await Magazyn.findById(magazynId);
+export const deleteAllTools = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = req.userId;
+  const toolsId = req.params.toolsId;
+  try {
+    const user = await userCheck(userId);
+    const magazyn = await findMagazyn(user.magazyn);
+    const tools = await Tools.findById(toolsId);
 
-  if (!magazyn) {
-    errorThrow(401, "Magazyn does not exists");
+    if (!tools) {
+      errorThrow(401, `Fodder of id:${toolsId} not found`);
+    }
+    const checkedTools = tools!;
+
+    const isOwnerOfFodder = magazyn.fodder.includes(checkedTools._id);
+
+    if (!isOwnerOfFodder) {
+      errorThrow(
+        401,
+        `User of id:${userId} is not owner of food item of id:${toolsId}`
+      );
+    }
+
+    const toolsFiltered = magazyn.fodder.filter((savedFodderId) => {
+      return savedFodderId.toString() !== toolsId;
+    });
+    await checkedTools.remove();
+    magazyn.fodder = toolsFiltered;
+    await magazyn.save();
+
+    res.status(200).json({
+      message: `Fodder of id:${toolsId} deleted`,
+    });
+  } catch (err) {
+    errorCatch(err, next);
   }
-  return magazyn!;
 };
