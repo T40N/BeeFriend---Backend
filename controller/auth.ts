@@ -16,6 +16,8 @@ export const signUp = async (
   try {
     validationResoulteCheck(req);
 
+    console.log(req.body);
+
     const email = req.body.email;
     const name = req.body.name;
     const surname = req.body.surname;
@@ -55,7 +57,14 @@ export const signUp = async (
       }
     );
 
-    res.status(201).json({ message: "User created!", userId: user._id, token });
+    res.status(201).json({
+      message: "User created!",
+      userId: user._id,
+      token,
+      email: user.email,
+      name: user.name,
+      surname: email.surname,
+    });
   } catch (err) {
     errorCatch(err, next);
   }
@@ -69,6 +78,7 @@ export const logIn = async (
   try {
     validationResoulteCheck(req);
 
+    console.log(req.body);
     const email = req.body.email;
     const password = req.body.password;
 
@@ -95,7 +105,13 @@ export const logIn = async (
         expiresIn: "24h",
       }
     );
-    res.status(200).json({ token: token, userId: checkedUser._id.toString() });
+    res.status(200).json({
+      token: token,
+      userId: checkedUser._id.toString(),
+      name: checkedUser.name,
+      surname: checkedUser.surname,
+      email: checkedUser.email,
+    });
   } catch (err) {
     errorCatch(err, next);
   }

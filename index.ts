@@ -21,8 +21,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     "Access-Control-Allow-Methods",
     "OPTIONS, GET, POST, PUT, PATCH, DELETE"
   );
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  //res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
+  console.log("request");
 });
 
 app.use("/auth", authRouter);
