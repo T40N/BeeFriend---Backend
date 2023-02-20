@@ -15,9 +15,8 @@ export const addNote = async (
 ) => {
   const userId = req.userId;
   const beeHaveId = req.params.beeHaveId;
-
+  console.log(beeHaveId);
   try {
-    validationResoultCheck(req);
     const { title, content } = req.body;
 
     const checkedUser = await userCheck(userId);
@@ -141,6 +140,8 @@ export const deleteNote = async (
 ) => {
   const noteId = req.params.noteId;
 
+  console.log(noteId);
+
   try {
     const note = await Note.findById(noteId);
 
@@ -148,9 +149,11 @@ export const deleteNote = async (
       errorThrow(401, `Note of id:${noteId} does not exists.`);
     }
 
+    note?.delete();
+
     res.status(201).json({
       message: "Note deleted successfully.",
-      data: note,
+      data: noteId,
     });
   } catch (err) {
     errorCatch(err, next);

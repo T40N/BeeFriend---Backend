@@ -6,30 +6,8 @@ import isAuth from "../middleware/is-auth";
 
 const userRouter = Router();
 
-userRouter.put(
-  "/changePassword",
-  isAuth,
-  [
-    body("oldPassword").isString().trim().notEmpty().isLength({ min: 5 }),
-    body("newPassword").isString().trim().notEmpty().isLength({ min: 5 }),
-  ],
-  changePassword
-);
-userRouter.put(
-  "/changeEmail",
-  isAuth,
-  [
-    body("oldEmail")
-      .isEmail()
-      .withMessage("Please enter a valid email.")
-      .normalizeEmail(),
-    body("newEmail")
-      .isEmail()
-      .withMessage("Please enter a valid email.")
-      .normalizeEmail(),
-  ],
-  changeEmail
-);
+userRouter.put("/changepassword", isAuth, changePassword);
+userRouter.put("/changeemail", isAuth, changeEmail);
 userRouter.delete(
   "/delete",
   isAuth,

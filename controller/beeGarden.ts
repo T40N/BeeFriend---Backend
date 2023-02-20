@@ -41,10 +41,13 @@ export const getBeeGarden = async (
 
   try {
     const checkedUser = await userCheck(userId);
-
+    const userPopulated = await checkedUser.populate("beeGarden.beeHaves");
+    const userPopulatedWithNotes = await userPopulated.populate(
+      "beeGarden.beeHaves.notes"
+    );
     res.status(200).json({
       message: `BeeGarden of user: ${checkedUser._id}`,
-      data: checkedUser.beeGarden,
+      data: userPopulatedWithNotes.beeGarden,
     });
   } catch (err) {
     errorCatch(err, next);

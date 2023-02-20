@@ -17,7 +17,6 @@ export const changePassword = async (
   const { oldPassword, newPassword } = req.body;
 
   try {
-    validationResoultCheck(req);
     const checkedUser = await userCheck(userId);
 
     const isPasswordCorrect = await bcryptjs.compare(

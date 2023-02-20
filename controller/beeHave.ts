@@ -16,7 +16,8 @@ export const addBeeHave = async (
   const name = req.body.name;
 
   try {
-    validationResoultCheck(req);
+    // validationResoultCheck(req);
+    console.log(req.body);
 
     const checkedUser = await userCheck(userId);
 
@@ -76,18 +77,19 @@ export const getBeeHaves = async (
   try {
     const checkedUser = await userCheck(userId);
 
-    const beeHaves = checkedUser.beeGarden!.beeHaves;
+    const userPopulated = await checkedUser.populate("beeGarden.beeHaves");
+    // console.log(checkedUser.beeGarden?.beeHaves);
 
-    if (beeHaves.length === 0) {
+    if (userPopulated!.beeGarden!.beeHaves.length === 0) {
       res.status(200).json({
         message: "User have no bee haves in bee garden yet.",
-        data: beeHaves,
+        data: userPopulated!.beeGarden!.beeHaves,
       });
     }
 
     res.status(200).json({
       message: "Bee haves succesfully retrived.",
-      data: beeHaves,
+      data: userPopulated!.beeGarden!.beeHaves,
     });
   } catch (err) {
     errorCatch(err, next);
@@ -134,7 +136,8 @@ export const addData = async (
   const beeHaveId = req.params.beeHaveId;
 
   try {
-    validationResoultCheck(req);
+    // validationResoultCheck(req);
+    console.log(req.body);
 
     const date = new Date(req.body.date);
     const honeyTaken = req.body.honeyTaken;
@@ -157,9 +160,11 @@ export const addData = async (
     checkedBeeHave.waxTakenAll = checkedBeeHave.waxTakenAll + waxTaken;
     checkedBeeHave.history!.push(newData);
 
+    checkedBeeHave.save();
+
     res.status(201).json({
       message: "Data added.",
-      data: beeHave,
+      data: checkedBeeHave.populate("history"),
     });
   } catch (err) {
     errorCatch(err, next);
@@ -187,6 +192,37 @@ export const deleteBeeHave = async (
 
     res.status(204).json({
       message: "BeeHave deleted.",
+    });
+  } catch (err) {
+    errorCatch(err, next);
+  }
+};
+
+export const setBeeHavePosition = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const beeHaveId = req.params.beeHaveId;
+  const newXPosition = req.body.xPosition;
+  const newYPosition = req.body.yPosition;
+  console.log(req);
+  try {
+    const beeHave = await BeeHave.findById(beeHaveId);
+
+    if (!beeHave) {
+      errorThrow(401, `BeeHave of id:${beeHaveId} does not exists.`);
+    }
+
+    const checkedBeeHave = beeHave!;
+    checkedBeeHave.xPosition = newXPosition;
+    checkedBeeHave.yPosition = newYPosition;
+
+    checkedBeeHave.save();
+
+    res.status(204).json({
+      beeHave: checkedBeeHave,
+      message: "BeeHave updated.",
     });
   } catch (err) {
     errorCatch(err, next);

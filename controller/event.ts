@@ -6,6 +6,26 @@ import validationResoulteCheck from "../helpers/validation-resoult-check";
 
 import Event from "../models/event";
 
+export const getCalendar = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = req.userId;
+
+  try {
+    const checkedUser = await userCheck(userId);
+    const userWithCalendar = await checkedUser.populate("calendar");
+
+    res.status(200).json({
+      message: "Calendar retrived",
+      data: userWithCalendar.calendar,
+    });
+  } catch (err) {
+    errorCatch(err, next);
+  }
+};
+
 export const addEvent = async (
   req: Request,
   res: Response,
@@ -14,8 +34,7 @@ export const addEvent = async (
   const userId = req.userId;
 
   try {
-    validationResoulteCheck(req);
-
+    console.log(req.body.date);
     const date = new Date(req.body.date);
     const name = req.body.name;
     const opis = req.body.opis;

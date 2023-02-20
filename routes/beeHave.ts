@@ -8,6 +8,7 @@ import {
   getBeeHave,
   getBeeHaves,
   updateBeeHave,
+  setBeeHavePosition,
 } from "../controller/beeHave";
 import isAuth from "../middleware/is-auth";
 
@@ -16,7 +17,7 @@ const beeHaveRouter = Router();
 beeHaveRouter.post(
   "/addBeeHave",
   isAuth,
-  [body("name").isString().notEmpty().trim().isLength({ min: 3 })],
+  // [body("name").isString().notEmpty().trim().isLength({ min: 3 })],
   addBeeHave
 );
 beeHaveRouter.get("/getBeeHave/:beeHaveId", isAuth, getBeeHave);
@@ -27,14 +28,15 @@ beeHaveRouter.put(
   [body("name").isString().notEmpty().trim().isLength({ min: 3 })],
   updateBeeHave
 );
-beeHaveRouter.post(
+beeHaveRouter.put("/setPosition/:beeHaveId", isAuth, setBeeHavePosition);
+beeHaveRouter.put(
   "/addData/:beeHaveId",
   isAuth,
-  [
-    body("date").isString().trim().notEmpty(),
-    body("honeyTaken").isNumeric().notEmpty(),
-    body("waxTaken").isNumeric().notEmpty(),
-  ],
+  // [
+  //   body("date").isString().trim().notEmpty(),
+  //   body("honeyTaken").isNumeric().notEmpty(),
+  //   body("waxTaken").isNumeric().notEmpty(),
+  // ],
   addData
 );
 beeHaveRouter.delete("/delete/:beeHaveId", isAuth, deleteBeeHave);

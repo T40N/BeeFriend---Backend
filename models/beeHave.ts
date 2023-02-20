@@ -10,6 +10,8 @@ interface IBeeHave {
     honeyTaken: number;
     waxTaken: number;
   }[];
+  xPosition: number;
+  yPosition: number;
 }
 
 const beeHaveSchema = new Schema({
@@ -42,6 +44,12 @@ const beeHaveSchema = new Schema({
       },
     },
   ],
+  xPosition: {
+    type: Number,
+  },
+  yPosition: {
+    type: Number,
+  },
 });
 
 const BeeHave = model<IBeeHave>("BeeHave", beeHaveSchema);

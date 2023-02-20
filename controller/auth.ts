@@ -88,6 +88,7 @@ export const logIn = async (
       errorThrow(401, `User of email:${email} does not exists.`);
     }
     const checkedUser = user!;
+    const userWithCalendar = await checkedUser.populate("calendar");
 
     const isPasswordCorrect = await bcryptjs.compare(password, user!.password);
 
@@ -111,6 +112,7 @@ export const logIn = async (
       name: checkedUser.name,
       surname: checkedUser.surname,
       email: checkedUser.email,
+      calendar: userWithCalendar.calendar,
     });
   } catch (err) {
     errorCatch(err, next);

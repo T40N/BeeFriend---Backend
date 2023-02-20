@@ -20,7 +20,8 @@ const addItem = async (
   opis: string,
   ItemModel: ItemModel,
   magazynDocument: MagazynDocument,
-  magazynItemName: "fodder" | "tools"
+  magazynItemName: "fodder" | "tools",
+  quantity?: number
 ) => {
   let item = await ItemModel.findOne({ name });
   if (item) {
@@ -29,14 +30,16 @@ const addItem = async (
     );
     if (!isOwnerOfFodder) errorThrow(401, `User is not owner of item: ${name}`);
 
-    item.quantity++;
+    item.quantity += quantity || 1;
   } else {
     item = new ItemModel({
       name,
       opis,
-      quantity: 1,
+      quantity: quantity || 1,
     });
-    magazynDocument!.fodder.push(item._id);
+    console.log(item);
+    if (ItemModel === Fodder) magazynDocument!.fodder.push(item._id);
+    if (ItemModel === Tools) magazynDocument!.tools.push(item._id);
   }
 
   magazynDocument!.save();
@@ -61,15 +64,16 @@ export const getMagazyn = async (
   const userId = req.userId;
 
   try {
+    console.log("getmagazyn");
     const checkedUser = await userCheck(userId);
 
-    const magazyn = await Magazyn.findById(checkedUser.magazyn)
-      .populate("fodder")
-      .populate("tools");
-
+    const magazyn = await Magazyn.findById(checkedUser.magazyn).populate(
+      "fodder"
+    );
+    const magazynWithTools = await magazyn?.populate("tools");
     res.status(200).json({
       message: "Magazyn retrived succesfully.",
-      data: magazyn,
+      data: magazynWithTools,
     });
   } catch (err) {
     errorCatch(err, next);
@@ -159,16 +163,21 @@ export const addFodder = async (
   const userId = req.userId;
 
   try {
-    validationResoultCheck(req);
-
-    const name = req.body.name;
-    const opis = req.body.opis;
+    console.log(req);
+    const quantity = req.body.quantity || undefined;
 
     const user = await userCheck(userId);
 
     const magazyn = await findMagazyn(user.magazyn);
 
-    const fodder = await addItem(name, opis, Fodder, magazyn, "fodder");
+    const fodder = await addItem(
+      "syrop",
+      "syrop",
+      Fodder,
+      magazyn,
+      "fodder",
+      quantity
+    );
 
     res.status(201).json({
       message: "Fodder added to magazyn.",
@@ -187,17 +196,14 @@ export const addTools = async (
   const userId = req.userId;
 
   try {
-    validationResoultCheck(req);
-
+    console.log(req.body);
     const name = req.body.name;
     const opis = req.body.opis;
 
     const user = await userCheck(userId);
 
     const magazyn = await findMagazyn(user.magazyn);
-
-    const tools = await addItem(name, opis, Fodder, magazyn, "tools");
-
+    const tools = await addItem(name, opis, Tools, magazyn, "tools");
     res.status(201).json({
       message: "Tools added to magazyn.",
       data: tools,
@@ -215,6 +221,7 @@ export const deleteFodder = async (
   const userId = req.userId;
   const fodderId = req.params.fodderId;
   try {
+    const quantity = req.body.quantity || 1;
     const user = await userCheck(userId);
     const magazyn = await findMagazyn(user.magazyn);
     const fodder = await Fodder.findById(fodderId);
@@ -234,10 +241,18 @@ export const deleteFodder = async (
     }
 
     if (checkedFodder.quantity > 1) {
-      checkedFodder.quantity = checkedFodder.quantity - 1;
+      let deletedQuantity = checkedFodder.quantity - quantity;
+      if (deletedQuantity > 0) {
+        checkedFodder.quantity = deletedQuantity;
+      } else {
+        checkedFodder.quantity = 0;
+      }
+      await checkedFodder.save();
       await magazyn.save();
 
-      res.status(200).json({
+      console.log(checkedFodder);
+
+      return res.status(200).json({
         message: `Fodder of id:${fodderId} deleted`,
       });
     } else {
@@ -306,16 +321,18 @@ export const deleteTool = async (
   const userId = req.userId;
   const fodderId = req.params.fodderId;
   try {
+    console.log(fodderId);
     const user = await userCheck(userId);
     const magazyn = await findMagazyn(user.magazyn);
     const tools = await Tools.findById(fodderId);
+    console.log(tools);
 
     if (!tools) {
       errorThrow(401, `Fodder of id:${fodderId} not found`);
     }
     const checkedTools = tools!;
 
-    const isOwnerOfFodder = magazyn.fodder.includes(checkedTools._id);
+    const isOwnerOfFodder = magazyn.tools.includes(checkedTools._id);
 
     if (!isOwnerOfFodder) {
       errorThrow(
@@ -326,17 +343,18 @@ export const deleteTool = async (
 
     if (checkedTools.quantity > 1) {
       checkedTools.quantity = checkedTools.quantity - 1;
+      await checkedTools.save();
       await magazyn.save();
 
       res.status(200).json({
         message: `Fodder of id:${fodderId} deleted`,
       });
     } else {
-      const fodderFiltered = magazyn.fodder.filter((savedFodderId) => {
+      const fodderFiltered = magazyn.tools.filter((savedFodderId) => {
         return savedFodderId.toString() !== fodderId;
       });
       await checkedTools.remove();
-      magazyn.fodder = fodderFiltered;
+      magazyn.tools = fodderFiltered;
       await magazyn.save();
 
       res.status(200).json({
