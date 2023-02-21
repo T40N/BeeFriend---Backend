@@ -16,8 +16,6 @@ export const signUp = async (
   try {
     validationResoulteCheck(req);
 
-    console.log(req.body);
-
     const email = req.body.email;
     const name = req.body.name;
     const surname = req.body.surname;
@@ -78,7 +76,6 @@ export const logIn = async (
   try {
     validationResoulteCheck(req);
 
-    console.log(req.body);
     const email = req.body.email;
     const password = req.body.password;
 

@@ -16,9 +16,6 @@ export const addBeeHave = async (
   const name = req.body.name;
 
   try {
-    // validationResoultCheck(req);
-    console.log(req.body);
-
     const checkedUser = await userCheck(userId);
 
     const beeHave = new BeeHave({
@@ -78,7 +75,6 @@ export const getBeeHaves = async (
     const checkedUser = await userCheck(userId);
 
     const userPopulated = await checkedUser.populate("beeGarden.beeHaves");
-    // console.log(checkedUser.beeGarden?.beeHaves);
 
     if (userPopulated!.beeGarden!.beeHaves.length === 0) {
       res.status(200).json({
@@ -136,9 +132,6 @@ export const addData = async (
   const beeHaveId = req.params.beeHaveId;
 
   try {
-    // validationResoultCheck(req);
-    console.log(req.body);
-
     const date = new Date(req.body.date);
     const honeyTaken = req.body.honeyTaken;
     const waxTaken = req.body.waxTaken;
@@ -206,7 +199,6 @@ export const setBeeHavePosition = async (
   const beeHaveId = req.params.beeHaveId;
   const newXPosition = req.body.xPosition;
   const newYPosition = req.body.yPosition;
-  console.log(req);
   try {
     const beeHave = await BeeHave.findById(beeHaveId);
 

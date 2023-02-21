@@ -34,7 +34,6 @@ export const addEvent = async (
   const userId = req.userId;
 
   try {
-    console.log(req.body.date);
     const date = new Date(req.body.date);
     const name = req.body.name;
     const opis = req.body.opis;

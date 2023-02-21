@@ -37,7 +37,7 @@ const addItem = async (
       opis,
       quantity: quantity || 1,
     });
-    console.log(item);
+
     if (ItemModel === Fodder) magazynDocument!.fodder.push(item._id);
     if (ItemModel === Tools) magazynDocument!.tools.push(item._id);
   }
@@ -64,7 +64,6 @@ export const getMagazyn = async (
   const userId = req.userId;
 
   try {
-    console.log("getmagazyn");
     const checkedUser = await userCheck(userId);
 
     const magazyn = await Magazyn.findById(checkedUser.magazyn).populate(
@@ -163,7 +162,6 @@ export const addFodder = async (
   const userId = req.userId;
 
   try {
-    console.log(req);
     const quantity = req.body.quantity || undefined;
 
     const user = await userCheck(userId);
@@ -196,7 +194,6 @@ export const addTools = async (
   const userId = req.userId;
 
   try {
-    console.log(req.body);
     const name = req.body.name;
     const opis = req.body.opis;
 
@@ -249,8 +246,6 @@ export const deleteFodder = async (
       }
       await checkedFodder.save();
       await magazyn.save();
-
-      console.log(checkedFodder);
 
       return res.status(200).json({
         message: `Fodder of id:${fodderId} deleted`,
@@ -321,11 +316,9 @@ export const deleteTool = async (
   const userId = req.userId;
   const fodderId = req.params.fodderId;
   try {
-    console.log(fodderId);
     const user = await userCheck(userId);
     const magazyn = await findMagazyn(user.magazyn);
     const tools = await Tools.findById(fodderId);
-    console.log(tools);
 
     if (!tools) {
       errorThrow(401, `Fodder of id:${fodderId} not found`);

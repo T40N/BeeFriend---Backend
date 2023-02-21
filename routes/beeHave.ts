@@ -17,7 +17,6 @@ const beeHaveRouter = Router();
 beeHaveRouter.post(
   "/addBeeHave",
   isAuth,
-  // [body("name").isString().notEmpty().trim().isLength({ min: 3 })],
   addBeeHave
 );
 beeHaveRouter.get("/getBeeHave/:beeHaveId", isAuth, getBeeHave);
@@ -32,11 +31,6 @@ beeHaveRouter.put("/setPosition/:beeHaveId", isAuth, setBeeHavePosition);
 beeHaveRouter.put(
   "/addData/:beeHaveId",
   isAuth,
-  // [
-  //   body("date").isString().trim().notEmpty(),
-  //   body("honeyTaken").isNumeric().notEmpty(),
-  //   body("waxTaken").isNumeric().notEmpty(),
-  // ],
   addData
 );
 beeHaveRouter.delete("/delete/:beeHaveId", isAuth, deleteBeeHave);

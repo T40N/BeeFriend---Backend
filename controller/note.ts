@@ -15,7 +15,6 @@ export const addNote = async (
 ) => {
   const userId = req.userId;
   const beeHaveId = req.params.beeHaveId;
-  console.log(beeHaveId);
   try {
     const { title, content } = req.body;
 
@@ -139,8 +138,6 @@ export const deleteNote = async (
   next: NextFunction
 ) => {
   const noteId = req.params.noteId;
-
-  console.log(noteId);
 
   try {
     const note = await Note.findById(noteId);
